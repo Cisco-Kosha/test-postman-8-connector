@@ -1,0 +1,89 @@
+name: Testing for Passthrough Connectors
+run-name: ${{ github.event_name }} triggered test 🚀
+on: [push]
+env:
+  WORKFLOW_LINK: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+jobs:
+  Lint:
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3.5.3
+      - name: GitHub App token
+        id: generate_token
+        uses: tibdex/github-app-token@v1.7.0
+        with:
+          app_id: 314287
+          private_key: ${{ secrets.APP_TOKEN }}
+      - name: Validate JSON and YAML files
+        id: validate_files
+        uses: GrantBirki/json-yaml-validate@v1.4.0
+        with:
+          name: File Validation
+          output: .github/output/lint.txt
+      - name: Set status payload
+        if: ${{ failure() }}
+        uses: octokit/request-action@v2.1.0
+        with:
+          route: PATCH /repos/:repository/actions/variables/:variable
+          repository: ${{ github.repository }}
+          variable: STATUS_PAYLOAD
+          name: STATUS_PAYLOAD
+          value: ${{ toJson(env.PAYLOAD) }}
+        env:
+          PAYLOAD: "{\"value\":\"INVALID\", \"short_description\":\"Lint failed on invalid JSON files\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\"}"
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+  Test:
+    runs-on: ubuntu-latest
+    needs: Lint
+    if: ${{ needs.Lint.result == 'success' }}
+    steps:
+      - name: Install swagger-cli
+        run: npm install -g @apidevtools/swagger-cli
+      - name: Checkout repo
+        uses: actions/checkout@v3.5.3  
+      - name: GitHub App token
+        id: generate_token
+        uses: tibdex/github-app-token@v1.7.0
+        with:
+          app_id: 314287
+          private_key: ${{ secrets.APP_TOKEN }}
+      - name: Run validation command
+        id: swagger_cli_validation
+        run: swagger-cli validate openapi.json
+      - name: Set status to ERROR 
+        if: ${{ failure() }}
+        uses: octokit/request-action@v2.1.0
+        with:
+          route: PATCH /repos/:repository/actions/variables/:variable
+          repository: ${{ github.repository }}
+          variable: STATUS_PAYLOAD
+          name: STATUS_PAYLOAD
+          value: ${{ toJson(env.PAYLOAD) }}
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          PAYLOAD: "{\"value\":\"ERROR\", \"short_description\":\"Tests failed on invalid API spec\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\"}"
+  Success:
+    runs-on: ubuntu-latest
+    needs: [Lint, Test]
+    if: ${{ needs.Lint.result == 'success' && needs.Test.result == 'success' }}
+    steps:
+      - name: GitHub App token
+        id: generate_token
+        uses: tibdex/github-app-token@v1.7.0
+        with:
+          app_id: 314287
+          private_key: ${{ secrets.APP_TOKEN }}
+      - name: Set status to READY 
+        uses: octokit/request-action@v2.1.0
+        with:
+          route: PATCH /repos/:repository/actions/variables/:variable
+          repository: ${{ github.repository }}
+          variable: STATUS_PAYLOAD
+          name: STATUS_PAYLOAD
+          value: ${{ toJson(env.PAYLOAD) }}
+        env:
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
+          PAYLOAD: "{\"value\":\"READY\", \"short_description\":\"Ready for deployment\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\"}"
