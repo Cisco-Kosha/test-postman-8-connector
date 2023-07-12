@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "fields": [
+    {
+      "field": "SERVER_URL",
+      "displayName": "Test-Postman-8 Server Url",
+      "type": "String",
+      "minLength": 10,
+      "maxLength": 50,
+      "required": true,
+      "description": "Test-Postman-8 API Server Url",
+      "default": "https://test.com",
+      "example": "https://test.com",
+      "helpSection": "use the default"
+    },
+    {
+      "field": "USERNAME",
+      "displayName": "Test-Postman-8 Username",
+      "type": "String",
+      "minLength": 10,
+      "maxLength": 50,
+      "required": true,
+      "description": "Test-Postman-8 API Username",
+      "default": "",
+      "example": "304720394u3",
+      "helpSection": "find in the settings section"
+    },
+    {
+      "field": "PASSWORD",
+      "displayName": "Test-Postman-8 Password",
+      "type": "String",
+      "minLength": 10,
+      "maxLength": 50,
+      "required": true,
+      "description": "Test-Postman-8 API Password",
+      "default": "",
+      "example": "304720394u3",
+      "helpSection": "find in the settings section"
+    }
+  ]
+}
