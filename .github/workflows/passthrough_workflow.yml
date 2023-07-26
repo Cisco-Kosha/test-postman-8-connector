@@ -31,7 +31,7 @@ jobs:
           value: ${{ toJson(env.PAYLOAD) }}
         env:
           ERROR_OUTPUT: ${{ steps.validate_files.outcome }}
-          PAYLOAD: "{\"value\":\"INVALID\", \"short_description\":\"Lint failed on invalid JSON files\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"id\": \"${{ github.run_id }}\"}"
+          PAYLOAD: "{\"value\":\"INVALID\", \"short_description\":\"Lint failed on invalid JSON files\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"run_id\": \"${{ github.run_id }}\"}"
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
   Test:
     runs-on: ubuntu-latest
@@ -62,7 +62,7 @@ jobs:
           value: ${{ toJson(env.PAYLOAD) }}
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-          PAYLOAD: "{\"value\":\"ERROR\", \"short_description\":\"Tests failed on invalid API spec\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"id\": \"${{ github.run_id }}\"}"
+          PAYLOAD: "{\"value\":\"ERROR\", \"short_description\":\"Tests failed on invalid API spec\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"run_id\": \"${{ github.run_id }}\"}"
 #       - name: Set status payload
 #         if: ${{ failure() }}
 #         uses: octokit/request-action@v2.1.0
@@ -96,7 +96,7 @@ jobs:
           value: ${{ toJson(env.PAYLOAD) }}
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-          PAYLOAD: "{\"value\":\"READY\", \"short_description\":\"Ready for deployment\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"id\": \"${{ github.run_id }}\"}"
+          PAYLOAD: "{\"value\":\"READY\", \"short_description\":\"Ready for deployment\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"run_id\": \"${{ github.run_id }}\"}"
 #       - name: Set status to READY 
 #         uses: octokit/request-action@v2.1.0
 #         id: change_status_value
