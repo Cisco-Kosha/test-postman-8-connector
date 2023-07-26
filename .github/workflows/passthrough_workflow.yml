@@ -20,9 +20,6 @@ jobs:
       - name: Validate JSON and YAML files
         id: validate_files
         uses: GrantBirki/json-yaml-validate@v1.4.0
-        with:
-          name: File Validation
-          output: .github/output/lint.txt
       - name: Set status payload
         if: ${{ failure() }}
         uses: octokit/request-action@v2.1.0
@@ -33,7 +30,8 @@ jobs:
           name: STATUS_PAYLOAD
           value: ${{ toJson(env.PAYLOAD) }}
         env:
-          PAYLOAD: "{\"value\":\"INVALID\", \"short_description\":\"Lint failed on invalid JSON files\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\"}"
+          ERROR_OUTPUT: ${{ steps.validate_files.outcome }}
+          PAYLOAD: "{\"value\":\"INVALID\", \"short_description\":\"Lint failed on invalid JSON files\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"id\": \"${{ github.run_id }}\"}"
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
   Test:
     runs-on: ubuntu-latest
@@ -64,7 +62,19 @@ jobs:
           value: ${{ toJson(env.PAYLOAD) }}
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-          PAYLOAD: "{\"value\":\"ERROR\", \"short_description\":\"Tests failed on invalid API spec\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\"}"
+          PAYLOAD: "{\"value\":\"ERROR\", \"short_description\":\"Tests failed on invalid API spec\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"id\": \"${{ github.run_id }}\"}"
+#       - name: Set status payload
+#         if: ${{ failure() }}
+#         uses: octokit/request-action@v2.1.0
+#         with:
+#           route: PATCH /repos/:repository/actions/variables/:variable
+#           repository: ${{ github.repository }}
+#           variable: STATUS_PAYLOAD
+#           name: STATUS_PAYLOAD
+#           value: "{'value': 'NONE', 'short_description':'Test failed', 'long_description': ${{ toJson(${{ steps.swagger_cli.outputs }}) }}}"
+# #           value: ${{ toJSON({"value": "NONE", "short_description":"Test failed", "long_description": ${{ steps.swagger_cli.outputs }}}) }}
+#         env:
+#           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
   Success:
     runs-on: ubuntu-latest
     needs: [Lint, Test]
@@ -86,4 +96,15 @@ jobs:
           value: ${{ toJson(env.PAYLOAD) }}
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
-          PAYLOAD: "{\"value\":\"READY\", \"short_description\":\"Ready for deployment\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\"}"
+          PAYLOAD: "{\"value\":\"READY\", \"short_description\":\"Ready for deployment\", \"long_description\":\"\", \"link\":\"${{ env.WORKFLOW_LINK }}\", \"id\": \"${{ github.run_id }}\"}"
+#       - name: Set status to READY 
+#         uses: octokit/request-action@v2.1.0
+#         id: change_status_value
+#         with:
+#           route: PATCH /repos/:repository/actions/variables/:variable
+#           repository: ${{ github.repository }}
+#           variable: STATUS
+#           name: STATUS
+#           value: READY
+#         env:
+#           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
